@@ -1,0 +1,1 @@
+ faust -A hello_world worker -l info
