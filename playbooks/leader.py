@@ -1,11 +1,12 @@
 '''
-https://faust.readthedocs.io/en/latest/playbooks/quickstart.html
+https://faust.readthedocs.io/en/latest/playbooks/leaderelection.html
 '''
 import faust
 import ssl
 import certifi
 from dotenv import load_dotenv
 import os
+import random
 
 load_dotenv(dotenv_path="../.env")
 
@@ -17,7 +18,7 @@ kafka_user = os.getenv("kafka_user")
 kafka_password = os.getenv("kafka_password")
 
 app = faust.App(
-    id='hello_world',
+    id='leader',
     broker=kafka_broker,
     broker_credentials=faust.SASLCredentials(
         username=kafka_user,
@@ -29,22 +30,15 @@ app = faust.App(
     topic_replication_factor=3
 )
 
-livecheck = app.LiveCheck()
 
-greetings_topic = app.topic('hello', value_type=str)
-
-
-@app.agent(greetings_topic)
-async def print_greetings(greetings):
+@app.agent()
+async def say(greetings):
     async for greeting in greetings:
-        print(greeting)
+        print(f"Rec:{greeting}")
 
 
-@app.timer(5)
-async def produce():
-    for i in range(2):
-        await print_greetings.send(value=f'hello {i}')
-
-
-if __name__ == '__main__':
-    app.main()
+@app.timer(interval=5, on_leader=True)
+async def public_greetings():
+    value = random.random()
+    print(f"Publishing:{value}")
+    await say.send(value=str(value))

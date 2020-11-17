@@ -1,5 +1,5 @@
 '''
-https://faust.readthedocs.io/en/latest/playbooks/quickstart.html
+https://faust.readthedocs.io/en/latest/playbooks/pageviews.html
 '''
 import faust
 import ssl
@@ -17,7 +17,7 @@ kafka_user = os.getenv("kafka_user")
 kafka_password = os.getenv("kafka_password")
 
 app = faust.App(
-    id='hello_world',
+    id='page_views',
     broker=kafka_broker,
     broker_credentials=faust.SASLCredentials(
         username=kafka_user,
@@ -29,22 +29,17 @@ app = faust.App(
     topic_replication_factor=3
 )
 
-livecheck = app.LiveCheck()
 
-greetings_topic = app.topic('hello', value_type=str)
-
-
-@app.agent(greetings_topic)
-async def print_greetings(greetings):
-    async for greeting in greetings:
-        print(greeting)
+class PageView(faust.Record):
+    id: str
+    user: str
 
 
-@app.timer(5)
-async def produce():
-    for i in range(2):
-        await print_greetings.send(value=f'hello {i}')
+page_view_topic = app.topic('page_views', value_type=PageView)
+page_views = app.Table('page_views', default=int)
 
 
-if __name__ == '__main__':
-    app.main()
+@app.agent(page_view_topic)
+async def count_page_view(views: list):
+    async for view in views.group_by(PageView.id):
+        page_views[view.id] += 1
