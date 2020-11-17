@@ -6,6 +6,9 @@ import ssl
 import certifi
 from dotenv import load_dotenv
 import os
+import logging
+
+from faust import Worker
 
 load_dotenv(dotenv_path="../.env")
 
@@ -47,4 +50,5 @@ async def produce():
 
 
 if __name__ == '__main__':
-    app.main()
+    worker = Worker(app=app, loglevel=logging.INFO)
+    worker.execute_from_commandline()
