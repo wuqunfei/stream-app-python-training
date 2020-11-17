@@ -1,8 +1,12 @@
+import logging
+
 import faust
 import ssl
 import certifi
 from dotenv import load_dotenv
 import os
+
+from faust import Worker
 
 load_dotenv(dotenv_path="../.env")
 
@@ -27,7 +31,7 @@ app = faust.App(
 )
 
 posts_topic = app.topic('posts', value_type=str)
-word_counts = app.Table('world_counts', default=int, help='Keep count of words (str to int).')
+word_counts = app.Table('word_counts', default=int, help='Keep count of words (str to int).')
 
 '''
 Step 1: do the word, count
@@ -56,3 +60,8 @@ Step 2: expose into web system
 @app.table_route(table=word_counts, match_info='word')
 async def get_count(web, request, word):
     return web.json({word: word_counts[word], })
+
+
+if __name__ == '__main__':
+    worker = Worker(app=app, loglevel=logging.INFO)
+    worker.execute_from_commandline()
