@@ -3,4 +3,7 @@ certifi==2020.6.20
 python-dotenv==0.15.0
 click_completion==0.5.2
 python-rocksdb==0.7.0
-prefect==0.13.16
+aiohttp==3.7.2
+asyncio==3.4.3
+aiomonitor==0.4.5
+faust-prometheus-monitor==0.1.4
