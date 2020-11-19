@@ -18,7 +18,7 @@ kafka_user = os.getenv("kafka_user")
 kafka_password = os.getenv("kafka_password")
 
 app = faust.App(
-    id='world-counts',
+    id='word_count',
     broker=kafka_broker,
     broker_credentials=faust.SASLCredentials(
         username=kafka_user,
@@ -62,6 +62,6 @@ async def get_count(web, request, word):
     return web.json({word: word_counts[word], })
 
 
-if __name__ == '__main__':
-    worker = Worker(app=app, loglevel=logging.INFO)
-    worker.execute_from_commandline()
+# if __name__ == '__main__':
+#     worker = Worker(app=app, loglevel=logging.INFO)
+#     worker.execute_from_commandline()
