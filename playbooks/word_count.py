@@ -66,3 +66,13 @@ async def get_count(web, request, word):
 if __name__ == '__main__':
     worker = Worker(app=app, loglevel=logging.INFO)
     worker.execute_from_commandline()
+
+
+
+'''
+Step 3. test 
+
+$kafka-console-producer.sh  --broker-list pkc-4r297.europe-west1.gcp.confluent.cloud:9092 --producer.config config.properties --topic posts
+curl http://localhost:6066/count/{word}
+
+'''
