@@ -27,7 +27,8 @@ app = faust.App(
     ),
     store='rocksdb://',
     version=1,
-    topic_replication_factor=3
+    topic_replication_factor=3,
+    value_serializer='raw'
 )
 
 posts_topic = app.topic('posts', value_type=str)
@@ -56,12 +57,12 @@ Step 2: expose into web system
 '''
 
 
-@app.page('/count/{word}/')
+@app.page('/count/{word}')
 @app.table_route(table=word_counts, match_info='word')
 async def get_count(web, request, word):
-    return web.json({word: word_counts[word], })
+    return web.json({word: word_counts[word]})
 
 
-# if __name__ == '__main__':
-#     worker = Worker(app=app, loglevel=logging.INFO)
-#     worker.execute_from_commandline()
+if __name__ == '__main__':
+    worker = Worker(app=app, loglevel=logging.INFO)
+    worker.execute_from_commandline()
