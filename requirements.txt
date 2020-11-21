@@ -7,3 +7,4 @@ aiohttp==3.7.2
 asyncio==3.4.3
 aiomonitor==0.4.5
 faust-prometheus-monitor==0.1.4
+pytest-asyncio==0.14.0

@@ -72,3 +72,4 @@ async def increase(web, request):
 if __name__ == '__main__':
     worker = Worker(app=app, loglevel=logging.INFO)
     worker.execute_from_commandline()
+    app.main()
