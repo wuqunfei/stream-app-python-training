@@ -1,22 +1,21 @@
 # https://faust.readthedocs.io/en/latest/userguide/sensors.html#sensor-api-reference
 import asyncio
-from typing import Mapping, Any
+from typing import Any
 
 import faust
 import ssl
 import certifi
 from dotenv import load_dotenv
 import os
-import aiohttp
 import logging
-from faust import Worker, Monitor
+from faust import Worker
 from faust.types import AppT
 from mode.utils.types.trees import NodeT
 from prometheus_client import Counter
 
-from playbooks.prometheusMonitor import PrometheusMonitor
+from playbooks.monitor.prometheusMonitor import PrometheusMonitor
 
-load_dotenv(dotenv_path="../.env")
+load_dotenv(dotenv_path="../../.env")
 
 ssl_context = ssl.create_default_context()
 ssl_context.load_verify_locations(cafile=certifi.where())

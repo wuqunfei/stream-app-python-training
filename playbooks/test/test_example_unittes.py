@@ -2,7 +2,7 @@ import unittest
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import patch, AsyncMock
 
-from playbooks.example import app, bar, foo
+from playbooks.test.example import app, bar, foo
 
 
 class Test(IsolatedAsyncioTestCase):

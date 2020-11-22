@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from playbooks.example import app, foo, bar
+from playbooks.test.example import app, foo, bar
 
 
 @pytest.fixture()

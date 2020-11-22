@@ -8,7 +8,7 @@ import os
 
 from faust import Worker
 
-load_dotenv(dotenv_path="../.env")
+load_dotenv(dotenv_path="../../.env")
 
 ssl_context = ssl.create_default_context()
 ssl_context.load_verify_locations(cafile=certifi.where())
