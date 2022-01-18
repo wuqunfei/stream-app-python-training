@@ -28,6 +28,9 @@ topic = app.topic('earthquake', value_type=EarthQuakeRecord)
 
 
 # 1. get earthquake  http -> Produce message
+# https://holypython.com/api-6-earthquake-data/
+# https://github.com/abshinn/usgs
+# https://earthquake.usgs.gov/fdsnws/event/1/
 def get_earthquake():
     pass
 
