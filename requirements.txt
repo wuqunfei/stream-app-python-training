@@ -10,5 +10,6 @@ aiomonitor
 pytest-asyncio
 testcontainers
 sqlalchemy
+pytz
 
 ## install conda install -c conda-forge python-rocksdb
