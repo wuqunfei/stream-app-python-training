@@ -80,7 +80,7 @@ async def sync_window_table_into_db():
     await Tortoise.init(db_url=connection_url,
                         modules={"models": ["__main__"]}
                         )
-    await Tortoise.generate_schemas(safe=True)
+    # await Tortoise.generate_schemas(safe=True)
     for key, value in earthquake_table.items():
         try:
             latitude, longitude = key.split(',')
@@ -90,6 +90,7 @@ async def sync_window_table_into_db():
         except Exception as ex:
             logging.error(key)
             logging.error(ex)
+    await Tortoise.close_connections()
 
 
 @app.agent(earthquake_topic)
