@@ -23,6 +23,7 @@ wheels/
 pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/
+examples/earthquake-app-data
 .installed.cfg
 *.egg
 MANIFEST
