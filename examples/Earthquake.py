@@ -44,25 +44,23 @@ async def get_earthquake_per_five_second():
     start_time = start_time_utc.strftime('%Y-%m-%dT%H:%M:%S')
     logging.info(f'Query earthquake at {start_time_utc}')
     records = await query_earthquake(start_time=start_time)
-    for record in records:
-        await earthquake_topic.send(key=record, value=record)
+    record = records.pop()
+    await earthquake_topic.send(key=record, value=record)
 
 
-@app.crontab(cron_format='*/1 * * * *', timezone=pytz.timezone('Asia/Shanghai'))
-async def persist_record_database():
-    async for event in earthquake_topic:
-        # await save_event_into_db()
-        logging.info(f'event: {event}')
-    logging.info(f'persist data into db')
+# @app.crontab(cron_format='*/1 * * * *', timezone=pytz.timezone('Asia/Shanghai'))
+# async def persist_record_database():
+#     # async for event in earthquake_topic:
+#     #     # await save_event_into_db()
+#     #     logging.info(f'event: {event}')
+#     logging.info(f'persist data into db')
 
 
-#
-#
-# @app.agent(channel=earthquake_topic)
-# async def send_earthquake_msg(messages):
-#     notify = Notify(endpoint='https://notify.run/7qIErxULDNDO4jDYgAca')
-#     async for msg in messages:
-#         notify.send(f'Dear, there is earthquake now,{msg}')
+@app.agent(earthquake_topic)
+async def send_earthquake_msg(messages):
+    notify = Notify(endpoint='https://notify.run/7qIErxULDNDO4jDYgAca')
+    async for msg in messages:
+        notify.send(f'{msg.title}')
 
 
 async def query_earthquake(start_time: str):
