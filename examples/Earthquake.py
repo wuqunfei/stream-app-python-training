@@ -5,8 +5,9 @@ import aiohttp
 from datetime import datetime, timedelta
 import sqlalchemy
 from notify_run import Notify
-from tortoise.models import Model
 from tortoise import fields
+from tortoise.models import Model
+from tortoise import Tortoise
 
 from faust import Worker
 
@@ -17,6 +18,14 @@ app = faust.App(
     store='rocksdb://',
     version=1,
 )
+
+db = {
+    'user': 'root',
+    'password': 'feifeifei',
+    'host': '127.0.0.1',
+    'port': 3306,
+    'database': 'leetcode'
+}
 
 
 class EQRecord(faust.Record, serializer='json'):
@@ -34,7 +43,14 @@ class EQLocationModel(Model):
     id = fields.IntField(pk=True)
     latitude = fields.FloatField()
     longitude = fields.FloatField()
-    occurrence_time = fields.FloatField()
+    occurrence = fields.IntField()
+    query_itme = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = 'earthquake_location'
+
+    def __str__(self):
+        return self.id
 
 
 earthquake_topic = app.topic('earthquake_topic', key_type=EQRecord, value_type=EQRecord, partitions=3)
@@ -60,6 +76,11 @@ async def get_earthquake_per_five_second():
 
 @app.timer(interval=10, name='SyncTimer')
 async def sync_window_table_into_db():
+    connection_url = f'mysql://{db["user"]}:{db["password"]}@{db["host"]}:{db["port"]}/{db["database"]}'
+    await Tortoise.init(db_url=connection_url,
+                        modules={"models": ["__main__"]}
+                        )
+    await Tortoise.generate_schemas(safe=True)
     for key, value in earthquake_table.items():
         try:
             latitude, longitude = key.split(',')

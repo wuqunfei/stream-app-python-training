@@ -6,6 +6,7 @@ python-rocksdb==0.7.0
 asyncpg
 aiohttp
 asyncio
+aiomysql
 aiomonitor
 pytest-asyncio
 testcontainers
@@ -14,6 +15,7 @@ pytz
 notify-run
 python-schema-registry-client
 pydantic
-tortoise-orm[asyncpg]
+tortoise-orm[aiomysql]
+
 
 ## install conda install -c conda-forge python-rocksdb
