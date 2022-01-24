@@ -28,7 +28,8 @@ class EQRecord(faust.Record, serializer='json'):
     time: int
 
 
-earthquake_topic = app.topic('earthquake_topic', key_type=EQRecord, value_type=EQRecord)
+earthquake_topic = app.topic('earthquake_topic', key_type=EQRecord, value_type=EQRecord, partitions=3)
+earthquake_table = app.Table('earthquake_table', default=float, partitions=3).tumbling(timedelta(minutes=1)).relative_to_now()
 
 
 @app.task
@@ -36,7 +37,7 @@ async def on_started():
     logging.info('Earthquake application started')
 
 
-@app.timer(interval=5)
+@app.timer(interval=5, name='QueryTimer')
 async def get_earthquake_per_five_second():
     local_time_zone = pytz.timezone('Asia/Shanghai')
     local_date_time = local_time_zone.localize(datetime.now() - timedelta(seconds=5), is_dst=None)
@@ -46,14 +47,6 @@ async def get_earthquake_per_five_second():
     records = await query_earthquake(start_time=start_time)
     record = records.pop()
     await earthquake_topic.send(key=record, value=record)
-
-
-# @app.crontab(cron_format='*/1 * * * *', timezone=pytz.timezone('Asia/Shanghai'))
-# async def persist_record_database():
-#     # async for event in earthquake_topic:
-#     #     # await save_event_into_db()
-#     #     logging.info(f'event: {event}')
-#     logging.info(f'persist data into db')
 
 
 @app.agent(earthquake_topic)
@@ -86,10 +79,6 @@ async def query_earthquake(start_time: str):
         datasets.append(record)
     logging.info(f'Query EarthQuake {len(datasets)} records at {start_time}')
     return datasets
-
-
-async def save_event_into_db():
-    pass
 
 
 if __name__ == '__main__':
