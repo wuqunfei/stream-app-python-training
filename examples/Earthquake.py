@@ -26,12 +26,28 @@ async def on_started():
     logging.info('Earthquake application started')
 
 
-@app.timer(interval=1)
+@app.timer(interval=10)
 async def get_earthquake_per_second():
-    query_start_time = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-    query_end_time = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
-    logging.info(f'Query earthquake at {query_end_time}')
-    await earthquake_topic.send(key=query_end_time, value=query_start_time)
+    start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    end_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    logging.info(f'Query earthquake at {end_time}')
+    datasets = await query_earthquake(start_time=start_time, end_time=end_time)
+    await earthquake_topic.send(key=end_time, value=start_time)
+
+
+async def query_earthquake(start_time: str, end_time: str):
+    parameters = {
+        "format": "geojson",
+        "starttime": start_time,
+        "endtime": end_time,
+        "alertlevel": "orange"
+    }
+    server = 'https://earthquake.usgs.gov/fdsnws/event/1/query'
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=server, params=parameters) as response:
+            datasets = await response.json()
+    logging.info(datasets)
+    return datasets
 
 
 if __name__ == '__main__':
