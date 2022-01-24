@@ -26,13 +26,20 @@ async def on_started():
     logging.info('Earthquake application started')
 
 
-@app.timer(interval=10)
+@app.timer(interval=15)
 async def get_earthquake_per_second():
     start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     end_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     logging.info(f'Query earthquake at {end_time}')
-    datasets = await query_earthquake(start_time=start_time, end_time=end_time)
+    # datasets = await query_earthquake(start_time=start_time, end_time=end_time)
     await earthquake_topic.send(key=end_time, value=start_time)
+
+
+@app.crontab(cron_format='*/1 * * * *', timezone=pytz.timezone('Asia/Shanghai'))
+async def persist_record_database():
+    async for event in earthquake_topic:
+        logging.info(f'event: {event}')
+    logging.info(f'persist data into db')
 
 
 async def query_earthquake(start_time: str, end_time: str):
@@ -48,6 +55,10 @@ async def query_earthquake(start_time: str, end_time: str):
             datasets = await response.json()
     logging.info(datasets)
     return datasets
+
+
+async def save_event_into_db():
+    pass
 
 
 if __name__ == '__main__':
