@@ -3,7 +3,6 @@ import pytz
 import logging
 import aiohttp
 from datetime import datetime, timedelta
-import sqlalchemy
 from notify_run import Notify
 from tortoise import fields
 from tortoise.models import Model
