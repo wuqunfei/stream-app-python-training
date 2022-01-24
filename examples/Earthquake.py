@@ -30,6 +30,13 @@ class EQRecord(faust.Record, serializer='json'):
     longitude: float = 0.0
 
 
+class EQLocationModel(Model):
+    id = fields.IntField(pk=True)
+    latitude = fields.FloatField()
+    longitude = fields.FloatField()
+    occurrence_time = fields.FloatField()
+
+
 earthquake_topic = app.topic('earthquake_topic', key_type=EQRecord, value_type=EQRecord, partitions=3)
 earthquake_table = app.Table('earthquake_table', default=float, partitions=3)
 
@@ -57,6 +64,8 @@ async def sync_window_table_into_db():
         try:
             latitude, longitude = key.split(',')
             logging.info(f'latitude: {latitude}, longitude: {longitude}, value: {value}')
+            model = EQLocationModel(latitude=latitude, longitude=longitude, occurrence_time=value)
+            await model.save(force_create=True)
         except Exception as ex:
             logging.error(key)
             logging.error(value)
@@ -67,7 +76,6 @@ async def handle_earthquake_msg(messages):
     notify = Notify(endpoint='https://notify.run/7qIErxULDNDO4jDYgAca')
     async for msg in messages:
         notify.send(f'{msg.title}')
-
         # update kafka table
         key = f'{msg.latitude},{msg.longitude}'
         earthquake_table[key] += 1
