@@ -47,7 +47,7 @@ class EQLocationModel(Model):
     query_itme = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = 'earthquake_location'
+        table = 'earthquake'
 
     def __str__(self):
         return self.id
@@ -85,11 +85,11 @@ async def sync_window_table_into_db():
         try:
             latitude, longitude = key.split(',')
             logging.info(f'latitude: {latitude}, longitude: {longitude}, value: {value}')
-            model = EQLocationModel(latitude=latitude, longitude=longitude, occurrence_time=value)
+            model = EQLocationModel(latitude=latitude, longitude=longitude, occurrence=value)
             await model.save(force_create=True)
         except Exception as ex:
             logging.error(key)
-            logging.error(value)
+            logging.error(ex)
 
 
 @app.agent(earthquake_topic)
