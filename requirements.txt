@@ -3,7 +3,7 @@ certifi
 python-dotenv
 click_completion
 python-rocksdb==0.7.0
-aiomysql
+asyncpg
 aiohttp
 asyncio
 aiomonitor
@@ -11,5 +11,9 @@ pytest-asyncio
 testcontainers
 sqlalchemy
 pytz
+notify-run
+python-schema-registry-client
+pydantic
+Tortoise
 
 ## install conda install -c conda-forge python-rocksdb

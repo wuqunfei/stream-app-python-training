@@ -2,7 +2,6 @@ import faust
 import pytz
 import logging
 import asyncio
-import aiomysql
 import ssl
 import certifi
 from dotenv import load_dotenv
@@ -10,6 +9,7 @@ import os
 import aiohttp
 import datetime
 import sqlalchemy
+from notify_run import Notify
 
 # https://github.com/aio-libs/aiomysql
 from faust import Worker
@@ -29,8 +29,10 @@ class EQRecord(faust.Record):
 
 
 metadata = sqlalchemy.MetaData()
-eq_table = sqlalchemy.Table('earthquake', metadata)
-eq_topic = app.topic('earthquake', value_type=EQRecord)
+
+eq_external_table = sqlalchemy.Table('earthquake', metadata)
+eq_internal_table = app.Table(name='earthquake_table')
+eq_topic = app.topic('earthquake_queue', value_type=EQRecord)
 
 
 # 1. get earthquake  http -> Produce message
@@ -62,9 +64,16 @@ async def persist_database():
     pass
 
 
-# 3. Expose data into reset api service
-def api():
-    pass
+# 3. Send Msg to User's Chrome
+# https://pypi.org/project/notify-run/
+# Endpoint: https://notify.run/7qIErxULDNDO4jDYgAca
+# To subscribe, open: https://notify.run/c/7qIErxULDNDO4jDYgAca
+
+@app.agent(channel=eq_topic)
+def send_earthquake_msg(messages):
+    notify = Notify(endpoint='https://notify.run/7qIErxULDNDO4jDYgAca')
+    async for msg in messages:
+        notify.send(f'Dear, there is earthquake now,{msg}')
 
 
 if __name__ == '__main__':
