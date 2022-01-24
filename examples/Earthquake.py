@@ -29,8 +29,7 @@ class EQRecord(faust.Record, serializer='json'):
 
 
 earthquake_topic = app.topic('earthquake_topic', key_type=EQRecord, value_type=EQRecord, partitions=3)
-earthquake_table = app.Table('earthquake_table', default=float, partitions=3).tumbling(
-    timedelta(minutes=1)).relative_to_now()
+earthquake_table = app.Table('earthquake_table', default=float, partitions=3)
 
 
 @app.task
@@ -50,7 +49,10 @@ async def get_earthquake_per_five_second():
     await earthquake_topic.send(key=record, value=record)
 
 
-
+@app.timer(interval=10, name='SyncTimer')
+async def sync_window_table_into_db():
+    for key, value in earthquake_table.items():
+        logging.info(f'{key}, {value}')
 
 
 @app.agent(earthquake_topic)
