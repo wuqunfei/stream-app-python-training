@@ -26,6 +26,8 @@ class EQRecord(faust.Record, serializer='json'):
     mag: float
     magType: str
     time: int
+    latitude: float = 0.0
+    longitude: float = 0.0
 
 
 earthquake_topic = app.topic('earthquake_topic', key_type=EQRecord, value_type=EQRecord, partitions=3)
@@ -52,15 +54,23 @@ async def get_earthquake_per_five_second():
 @app.timer(interval=10, name='SyncTimer')
 async def sync_window_table_into_db():
     for key, value in earthquake_table.items():
-        logging.info(f'{key}, {value}')
+        try:
+            latitude, longitude = key.split(',')
+            logging.info(f'latitude: {latitude}, longitude: {longitude}, value: {value}')
+        except Exception as ex:
+            logging.error(key)
+            logging.error(value)
 
 
 @app.agent(earthquake_topic)
 async def handle_earthquake_msg(messages):
     notify = Notify(endpoint='https://notify.run/7qIErxULDNDO4jDYgAca')
     async for msg in messages:
-        earthquake_table[msg.place] += 1
         notify.send(f'{msg.title}')
+
+        # update kafka table
+        key = f'{msg.latitude},{msg.longitude}'
+        earthquake_table[key] += 1
 
 
 async def query_earthquake(start_time: str):
@@ -81,7 +91,9 @@ async def query_earthquake(start_time: str):
             type=feature['properties']['type'],
             mag=feature['properties']['mag'],
             magType=feature['properties']['magType'],
-            time=feature['properties']['time']
+            time=feature['properties']['time'],
+            latitude=feature['geometry']['coordinates'][0],
+            longitude=feature['geometry']['coordinates'][1]
         )
         datasets.append(record)
     logging.info(f'Query EarthQuake {len(datasets)} records at {start_time}')
