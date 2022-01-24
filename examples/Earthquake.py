@@ -13,6 +13,8 @@ from notify_run import Notify
 
 # https://github.com/aio-libs/aiomysql
 from faust import Worker
+from tortoise.models import Model
+from tortoise import fields
 
 app = faust.App(
     'earthquake-app',
@@ -26,6 +28,13 @@ app = faust.App(
 # Schema Register Case
 class EQRecord(faust.Record):
     value: int
+
+
+class EQModel(Model):
+    id = fields.IntField(pk=True)
+    create_time = fields.DatetimeField()
+    lat = fields.FloatField()
+    lang = fields.FloatField()
 
 
 metadata = sqlalchemy.MetaData()
@@ -61,7 +70,10 @@ async def get_earthquake_per_minute():
 # 2. Consume the message into database
 @app.crontab(cron_format='*/1 * * * *', timezone=pytz.timezone('Asia/Shanghai'))
 async def persist_database():
-    pass
+    messages = eq_topic.get()
+    for msg in messages:
+        model = EQModel()
+        await model.create()
 
 
 # 3. Send Msg to User's Chrome
