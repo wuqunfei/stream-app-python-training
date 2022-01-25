@@ -25,7 +25,7 @@ api = alpaca_trade_api.REST(ALPACA_API_KEY, ALPACA_SECRET_KEY, alpaca_base_url, 
 
 aapl = api.get_barset('AAPL', 'day')
 
-type(aapl)
+data = aapl.df
 
 
 class SmaCross(bt.SignalStrategy):
@@ -36,7 +36,7 @@ class SmaCross(bt.SignalStrategy):
 
 
 is_live = False
-data = bt.feeds.PandasData(aapl.df)
+data = bt.feeds.PandasData(dataname=data)
 cerebro = bt.Cerebro()
 cerebro.adddata(data)
 cerebro.addstrategy(SmaCross)
