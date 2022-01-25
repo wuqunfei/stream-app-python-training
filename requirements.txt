@@ -17,6 +17,7 @@ python-schema-registry-client
 pydantic
 tortoise-orm[aiomysql]
 backtrader
+backtesting
 alpaca-trade-api
 
 ## install conda install -c conda-forge python-rocksdb
